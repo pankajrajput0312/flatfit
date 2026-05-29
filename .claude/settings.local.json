@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(node *)",
+      "Bash(pbcopy)",
+      "Bash(brew install *)",
+      "Bash(supabase *)",
+      "Bash(chmod +x scripts/open-supabase-sql.sh)",
+      "Bash(./scripts/open-supabase-sql.sh)",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/signup -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"test123\"}')",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/auth/signup -H 'Content-Type: application/json' -d '{\"email\":\"test@flatfit.com\",\"password\":\"test123\"}')",
+      "Bash(curl *)",
+      "Bash(open \"https://supabase.com/dashboard/project/yegevmpfjxoubpmuanoo/sql\")",
+      "Bash(pkill -9 -f \"next dev\")"
+    ]
+  }
+}
