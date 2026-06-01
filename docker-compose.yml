@@ -1,0 +1,145 @@
+version: '3.8'
+
+networks:
+  flatfit_network:
+    name: flatfit_network
+    driver: bridge
+
+volumes:
+  postgres_prod_data:
+    name: postgres_prod_data
+  redis_prod_data:
+    name: redis_prod_data
+
+services:
+  # ============================================================================
+  # SERVICE 1: PRIMARY TRANS-ENGINE (POSTGRESQL 16)
+  # ============================================================================
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: flatfit_postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: ${TZ}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - flatfit_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # SERVICE 2: IN-MEMORY CACHE & LIVE ACTIVE STANDINGS (REDIS 7.4)
+  # ============================================================================
+  redis-cache:
+    image: redis:7.4-alpine
+    container_name: flatfit_redis_container
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --appendfsync everysec
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - redis_prod_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - flatfit_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================================
+  # SERVICE 3: BACKEND ENGINE MONOLITH CORE (FASTAPI)
+  # ============================================================================
+  backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flatfit_backend_container
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres-db
+      REDIS_HOST: redis-cache
+    ports:
+      - "8000:8000"
+    networks:
+      - flatfit_network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+
+  # ============================================================================
+  # SERVICE 4: CELERY ASYNCHRONOUS BACKGROUND WORKER
+  # ============================================================================
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flatfit_celery_worker
+    restart: always
+    command: celery -A app.workers.celery_app.celery worker --loglevel=info
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres-db
+      REDIS_HOST: redis-cache
+    networks:
+      - flatfit_network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+
+  # ============================================================================
+  # SERVICE 5: CELERY BEAT DISTRIBUTED CRON TICKER
+  # ============================================================================
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flatfit_celery_beat
+    restart: always
+    command: celery -A app.workers.celery_app.celery beat --loglevel=info
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres-db
+      REDIS_HOST: redis-cache
+    networks:
+      - flatfit_network
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+
+  # ============================================================================
+  # SERVICE 6: ADAPTIVE CORE UI CLIENT (REACT / FRONTEND)
+  # ============================================================================
+  frontend-client:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: flatfit_frontend_container
+    restart: always
+    ports:
+      - "3000:80"
+    networks:
+      - flatfit_network
+    depends_on:
+      - backend-api
