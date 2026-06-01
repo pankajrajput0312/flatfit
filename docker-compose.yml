@@ -131,15 +131,15 @@ services:
   # ============================================================================
   # SERVICE 6: ADAPTIVE CORE UI CLIENT (REACT / FRONTEND)
   # ============================================================================
-  frontend-client:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: flatfit_frontend_container
-    restart: always
-    ports:
-      - "3000:80"
-    networks:
-      - flatfit_network
-    depends_on:
-      - backend-api
+  # frontend-client:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: flatfit_frontend_container
+  #   restart: always
+  #   ports:
+  #     - "3000:80"
+  #   networks:
+  #     - flatfit_network
+  #   depends_on:
+  #     - backend-api

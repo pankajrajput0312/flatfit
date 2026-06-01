@@ -13,9 +13,12 @@ class RedisPool:
     @classmethod
     def get_pool(cls) -> redis.ConnectionPool:
         if cls._pool is None:
-            # We configure Redis to decode responses recursively so we don't have to deal with bytes strings.
-            cls._pool = redis.ConnectionPool.from_url(
-                settings.redis_url,
+            # Pass connection parameters explicitly to bypass urllib parsing bugs with complex passwords
+            cls._pool = redis.ConnectionPool(
+                host=settings.REDIS_HOST,
+                port=settings.REDIS_PORT,
+                password=settings.REDIS_PASSWORD,
+                db=0,
                 decode_responses=True,
                 max_connections=500  # Protection limit against connection flooding
             )

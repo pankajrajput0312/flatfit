@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy import text
 from sqlalchemy.orm import declarative_base
 from app.config import get_settings
 
@@ -9,7 +10,7 @@ settings = get_settings()
 # Expected usage is with asyncpg driver
 engine = create_async_engine(
     settings.async_database_url,
-    echo=settings.ENVIRONMENT == "development", # Logs SQL queries only in dev
+    echo=settings.APP_ENV == "development", # Logs SQL queries only in dev
     pool_size=10, # Maintain up to 10 connections in pool
     max_overflow=20, # Allow up to 20 temporary connections beyond pool_size under high load
     pool_pre_ping=True, # Test connections before using them to handle drops
@@ -37,7 +38,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         try:
             # We enforce strict UTC offset/timezone explicitly per session. 
             # (PostgreSQL config normally defaults, but it doesn't hurt to explicitly enforce timezone parameters).
-            await session.execute("SET TIME ZONE 'Asia/Kolkata'")
+            await session.execute(text("SET TIME ZONE 'Asia/Kolkata'"))
             yield session
         except Exception:
             await session.rollback()

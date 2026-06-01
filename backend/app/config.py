@@ -1,3 +1,4 @@
+from urllib.parse import quote_plus
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 
@@ -24,12 +25,14 @@ class Settings(BaseSettings):
     @property
     def async_database_url(self) -> str:
         """Constructs the async PostgreSQL connection string."""
-        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        encoded_pw = quote_plus(self.POSTGRES_PASSWORD)
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{encoded_pw}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
     
     @property
     def sync_database_url(self) -> str:
         """Constructs the sync PostgreSQL connection string (useful for basic scripts/alembic)."""
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        encoded_pw = quote_plus(self.POSTGRES_PASSWORD)
+        return f"postgresql://{self.POSTGRES_USER}:{encoded_pw}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     # Redis Cache / Storage
     REDIS_HOST: str = "redis-cache"
@@ -39,7 +42,8 @@ class Settings(BaseSettings):
     @property
     def redis_url(self) -> str:
         """Constructs the Redis connection string."""
-        return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/0"
+        encoded_pw = quote_plus(self.REDIS_PASSWORD)
+        return f"redis://:{encoded_pw}@{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
     # Security
     JWT_SECRET_KEY: str
