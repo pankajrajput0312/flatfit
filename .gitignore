@@ -1,0 +1,56 @@
+# ==============================================================================
+# SECURE CONFIGURATION & RUNTIME SECRETS (CRITICAL SECURITY RISK SHIELDS)
+# ==============================================================================
+.env
+.env.local
+.env.production
+.env.staging
+.env.*.local
+*.pem
+*.key
+*.p12
+*.cert
+
+# ==============================================================================
+# PYTHON RUNTIME ARCHITECTURE & INTERPRETER BYTECODE
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==============================================================================
+# NODE / FRONTEND WEB DEPLOYMENT FRAGMENTS
+# ==============================================================================
+node_modules/
+frontend/dist/
+frontend/build/
+.eslintcache
+.vite/
+
+# ==============================================================================
+# CONTAINER INFRASTRUCTURE PERSISTENCE DROPS & REALTIME TRANSACTION LOGS
+# ==============================================================================
+.docker-volumes/
+postgres_data/
+redis_data/
+*.log
+celerybeat-schedule
+
+# ==============================================================================
+# OPERATING SYSTEM SPECIFIC METADATA SCRAPS
+# ==============================================================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
