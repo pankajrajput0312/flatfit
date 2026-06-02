@@ -7,6 +7,7 @@ from app.config import get_settings
 from app.core.redis_pool import RedisPool
 from app.core.exceptions import APIException
 from app.modules.auth.routes import router as auth_router
+from app.modules.flats.routes import router as flats_router
 
 settings = get_settings()
 
@@ -76,6 +77,7 @@ async def api_exception_handler(request, exc: APIException):
 # Mount the Authentication module domain space.
 # It will be accessible globally via /api/v1/auth/...
 app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(flats_router, prefix=settings.API_V1_STR)
 
 @app.get("/health", tags=["System"])
 async def root_healthcheck():
