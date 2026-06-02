@@ -111,10 +111,30 @@ class FlatService:
         """
         Retrieves all active groups the user belongs to.
         """
-        # We use selectinload to eagerly fetch the flat objects tied to the membership rows
         result = await db.execute(
             select(Flat)
             .join(FlatMember)
             .where(FlatMember.user_id == user_id)
+        )
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def get_flat_members(db: AsyncSession, flat_id: uuid.UUID, requesting_user_id: uuid.UUID) -> list[FlatMember]:
+        """
+        Returns all members of a flat.
+        Only accessible to existing members of that flat (prevents outsiders from scraping group data).
+        """
+        # Access guard: Confirm requesting user is already part of this flat
+        membership_check = await db.execute(
+            select(FlatMember)
+            .where(FlatMember.flat_id == flat_id)
+            .where(FlatMember.user_id == requesting_user_id)
+        )
+        if not membership_check.scalars().first():
+            raise ForbiddenException("You must be a member of this flat to view its members.")
+
+        # Fetch all members
+        result = await db.execute(
+            select(FlatMember).where(FlatMember.flat_id == flat_id)
         )
         return list(result.scalars().all())

@@ -5,7 +5,7 @@ from redis.asyncio import Redis
 
 from app.core.database import get_db
 from app.core.redis_pool import get_redis
-from app.modules.flats.schemas import FlatCreate, FlatJoin, FlatResponse, FlatInviteResponse
+from app.modules.flats.schemas import FlatCreate, FlatJoin, FlatResponse, FlatInviteResponse, FlatMemberResponse
 from app.modules.flats.services import FlatService
 from app.modules.auth.models import User
 from app.core.dependencies import get_current_user
@@ -90,3 +90,22 @@ async def generate_invite(
         "expires_in_seconds": ttl,
         "flat_id": flat_id
     }
+
+
+@router.get(
+    "/{flat_id}/members",
+    response_model=list[FlatMemberResponse],
+    status_code=status.HTTP_200_OK,
+    summary="Get all members of a Flat (members only)"
+)
+async def get_flat_members(
+    flat_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Returns the full member list for a given flat.
+    Only accessible to existing members — outsiders cannot scrape group membership.
+    """
+    members = await FlatService.get_flat_members(db, flat_id, current_user.id)
+    return members
