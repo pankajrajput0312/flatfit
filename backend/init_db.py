@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 # Must import all models so SQLAlchemy's Base recognizes them
 from app.modules.auth.models import User
 from app.modules.flats.models import Flat, FlatMember
+from app.modules.metrics.models import UserMetricConfig, MetricLog
 from app.core.database import Base
 from app.config import get_settings
 
