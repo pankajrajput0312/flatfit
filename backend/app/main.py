@@ -9,6 +9,7 @@ from app.core.exceptions import APIException
 from app.modules.auth.routes import router as auth_router
 from app.modules.flats.routes import router as flats_router
 from app.modules.metrics.routes import router as metrics_router
+from app.modules.leaderboards.routes import router as leaderboards_router
 
 settings = get_settings()
 
@@ -80,6 +81,7 @@ async def api_exception_handler(request, exc: APIException):
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(flats_router, prefix=settings.API_V1_STR)
 app.include_router(metrics_router, prefix=settings.API_V1_STR)
+app.include_router(leaderboards_router, prefix=settings.API_V1_STR)
 
 @app.get("/health", tags=["System"])
 async def root_healthcheck():
